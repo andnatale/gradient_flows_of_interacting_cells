@@ -1,0 +1,9 @@
+trash/
+__pycache__/
+*.pyc
+
+# Ignore vim files:
+*~
+*.swp
+*.swo
+*.swn
