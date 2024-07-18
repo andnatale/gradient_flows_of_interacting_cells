@@ -19,7 +19,7 @@ class TestCase:
         self.gamma = pressure_power
         
         if self.gamma>1:
-            self.C = 1/3
+            self.C = 1/2 # 1/3
             self.t0 = 1/16
             self.T = 1.
             
@@ -186,8 +186,36 @@ class TestCase:
         #return errorvec, ratevec, Y_hist
 
 
+    def make_convergence_plot(self,Ntests = 4, factor = 9, radial_func = RadialFuncInBall()):
+        nvec = factor*2**(np.arange(Ntests))
+        errorvec = []
+        for i in range(Ntests):
+            print('Test '+str(i+1)+' running..')
+            npoints = nvec[i]
+            error, Y_hist =self.run_test(npoints,radial_func)
+            errorvec.append(error)
 
-test = TestCase(pressure_power=1.)
-test.make_convergence_table(Ntests=4,factor =10, radial_func = RadialFuncInBall())
+        self.errorvec = errorvec
+        self.nvec = nvec
+
+        ratevec = (np.log(errorvec[1:]) - np.log(errorvec[:-1]))/(np.log(nvec[1:])-np.log(nvec[:-1]))
+
+        fig, ax = plt.subplots()
+        
+        ax.loglog(1/nvec, errorvec, 'k-',linewidth=2)    
+        ax.loglog(1/nvec, (errorvec[-1]+.01)*(nvec/nvec[-1])**ratevec[-1] ,'r--',linewidth =2,label="p={:.2f}".format(np.abs(ratevec[-1])))
+
+        ax.set_xlabel('$1/\sqrt{N}$')
+        ax.legend()
+
+        ax.xaxis.set_tick_params(which='major', rotation=45)
+        ax.xaxis.set_tick_params(which='minor', rotation=45)
+        fig.set_size_inches(w=3, h=2.5)
+        
+        fig.tight_layout()
+
+
+test = TestCase(pressure_power=1.5)
+test.make_convergence_plot(Ntests=4,factor =10, radial_func = RadialFuncInBall())
 
 
