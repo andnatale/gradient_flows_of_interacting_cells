@@ -12,7 +12,7 @@ from matplotlib import cm
 
 
 # Set up initial conditions
-n = 100 
+n = 140
 coords0plus= np.linspace(0,1,n+1)
 coords0 = .5*(coords0plus[:-1] + coords0plus[1:])
 x0, y0 = np.meshgrid(coords0,coords0)
@@ -43,27 +43,27 @@ energy_fun = lambda areas: np.sum(((nu/areas)**gamma)*areas)
 #R0 = np.linalg.norm(Y0-.5,axis=1)
 #V0[:,0] = - alpha* np.exp(-R0**2/2/sigma**2) *( Y0[:,1]-.5)
 #V0[:,1] = alpha*np.exp(-R0**2/2/sigma**2) *( Y0[:,0]-.5)
-#s = 1. - alpha**2*sigma**2/4* np.sum(nu)*np.exp(-R0**2/sigma**2)
+#s = 1. - alpha**2*sigma**2/np.sum(nu)/2*np.exp(-R0**2/sigma**2)
 
 
 #Two vortices
-alpha = 4. 
+alpha = 5.#6. 
 sigma = .15
 p1,p2 = .35,.65
 R0 = np.linalg.norm(Y0-p1,axis=1)
 V0[:,0] = - alpha* np.exp(-R0**2/2/sigma**2) *( Y0[:,1]-p1)
 V0[:,1] = alpha*np.exp(-R0**2/2/sigma**2) *( Y0[:,0]-p1)
-s = 1-  alpha**2*sigma**2* np.sum(nu)/2*np.exp(-R0**2/sigma**2)
+s = 1.-  alpha**2*sigma**2/np.sum(nu)/2*np.exp(-R0**2/sigma**2)  
 R0 = np.linalg.norm(Y0-p2,axis=1)
 V0[:,0] = V0[:,0] - alpha* np.exp(-R0**2/2/sigma**2) *( Y0[:,1]-p2)
 V0[:,1] = V0[:,1] + alpha*np.exp(-R0**2/2/sigma**2) *( Y0[:,0]-p2)
-s += -  alpha**2*sigma**2* np.sum(nu)/2*np.exp(-R0**2/sigma**2)
+s += -  alpha**2*sigma**2/np.sum(nu)/2*np.exp(-R0**2/sigma**2)
 
 # Parameters
-epsilon = 1./n/4 
-dt = 2./n**2
+epsilon = 1./n/4
+dt = 1/n/50 #2./n**2
 t0 = 0
-T  = 2.5 
+T  = 2. 
 
 # Domain 
 domain = make_square([0.,0.,1.,1.])
@@ -86,31 +86,33 @@ Y_hist, psi_hist, E_hist,Eeps_hist,K_hist = hamiltonian_flow_integrator(et, epsi
 
 
 # Plots
-tvec = np.linspace(0,T,10)
+tvec = np.linspace(0,T-dt,40)
 times = (tvec/dt).astype(int)
 #times = [0, int(.05/dt), int(.2/dt), -1]
 
-
 for k in range(len(times)):
-    
+
     time = times[k]
     pd = PowerDiagram(Y_hist[time], psi_hist[time], domain, RadialFuncInBall())
     areas = pd.integrals()
-    fig, ax = plt.subplots()
-  
-    scat = ax.scatter(Y_hist[time][:,0],Y_hist[time][:,1],s=.5, c = nu/areas, vmin=np.min(nu/areas), vmax=np.max(nu/areas))
-    ax.axis('off')
-    #ax.set_xlim([-.2,1.2])
-    #ax.set_ylim([-.2,1.2])
-    ax.set_aspect('equal', adjustable='box')
-    #with open('test{}.png'.format(k), 'w') as outfile:
-    #    fig.canvas.print_png(outfile)
-    filename = "data/thermal_test/thermal{}.png".format(k)
-    fig.set_size_inches(w=2.5, h=2.5)
+ 
+    fig, ax = plt.subplots(1,2)
+    scat = ax[0].scatter(Y_hist[time][:,0],Y_hist[time][:,1],s=.5, c = nu/areas, vmin=1.45, vmax=1.65)
+    ax[0].axis('off')
+    ax[0].set_aspect('equal', adjustable='box')
+    fig.colorbar(scat,orientation="horizontal",ax=ax[0],fraction=0.043, pad=0.04)#(scat,ticks=[0,.2])
+    
+    scat = ax[1].scatter(Y_hist[time][:,0],Y_hist[time][:,1],s=.5, c = s, vmin=np.min(s), vmax=np.max(s))
+    ax[1].axis('off')
+    ax[1].set_aspect('equal', adjustable='box')
+    filename = "data/thermal_test/thermalj{}.png".format(k)
+    fig.set_size_inches(w=4., h=2.5)
     fig.tight_layout()
-    fig.colorbar(scat)#(scat,ticks=[0,.2])
+    fig.colorbar(scat,orientation="horizontal",ax=ax[1],fraction=0.043, pad=0.04)#(scat,ticks=[0,.2])
+    plt.subplots_adjust(wspace=0, hspace=0)
     fig.savefig(filename, dpi=300)
     plt.close()
+
 
 tvec = np.arange(len(E_hist))*dt
 fig, ax = plt.subplots()

@@ -190,5 +190,5 @@ def hamiltonian_flow_integrator(et, eps,nu,t0,T,tau, Y = None, V=None, x0potenti
     if energy_fun is None:
         return Y_hist, psi_hist
     else:
-        return Y_hist, psi_hist, ernergy_hist, energy_eps_hist, kinetic_hist
+        return Y_hist, psi_hist, energy_hist, energy_eps_hist, kinetic_hist
 
